@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Input Stock Harian</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f4f6f9;margin:0}
+.container{max-width:900px;margin:30px auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+h1,h2{text-align:center;margin:5px}
+.info{display:flex;justify-content:space-between;flex-wrap:wrap;margin:15px 0;font-weight:bold}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid #ddd;padding:10px;text-align:center}
+th{background:#4CAF50;color:#fff}
+input[type=number]{width:80px;padding:6px;text-align:center}
+button{background:#4CAF50;color:#fff;border:none;padding:12px 25px;border-radius:6px;cursor:pointer;font-size:16px;margin-top:20px}
+button:disabled{background:#999;cursor:not-allowed}
+.status{margin-top:15px;font-weight:bold;color:green}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>GRIYO DHAHAR KACA5</h1>
+<h2>INPUT STOCK HARIAN</h2>
+
+<div class="info">
+<div>Tanggal : <span id="tanggal"></span></div>
+<div id="lastSave">Terakhir disimpan : -</div>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>No</th>
+<th>Nama Barang</th>
+<th>Satuan</th>
+<th>Jumlah</th>
+</tr>
+</thead>
+<tbody id="barangList"></tbody>
+</table>
+
+<center>
+<button id="btnSimpan" onclick="simpan()">Simpan ke Sheets</button>
+</center>
+
+<div class="status" id="status"></div>
+
+</div>
+
+<script>
+
+const URL_APPS_SCRIPT="https://script.google.com/macros/s/AKfycbxNJMObG4woO4WqioKajOFyf2XbTHWBsGhd6Z_F4jXaun0GPSZiSWCFelO36HXk-cYC/exec";
+
+const barang=[
+{nama:"Teh Manis",satuan:"Botol"},
+{nama:"Es Jeruk",satuan:"Gelas"},
+{nama:"Kopi Hitam",satuan:"Cup"},
+{nama:"Air Mineral",satuan:"Botol"},
+{nama:"Jus Alpukat",satuan:"Gelas"},
+{nama:"Ayam Crispy",satuan:"Porsi"},
+{nama:"Nasi Goreng",satuan:"Porsi"}
+];
+
+let sedangMenyimpan=false;
+
+document.getElementById("tanggal").textContent=
+new Date().toLocaleDateString("id-ID",{day:"2-digit",month:"long",year:"numeric"});
+
+let html="";
+
+barang.forEach((item,index)=>{
+html+=`
+<tr>
+<td>${index+1}</td>
+<td>${item.nama}</td>
+<td>${item.satuan}</td>
+<td><input type="number" id="qty${index}" min="0" value="0"></td>
+</tr>`;
+});
+
+document.getElementById("barangList").innerHTML=html;
+
+// Enter pindah ke input berikutnya
+barang.forEach((_,i)=>{
+const inp=document.getElementById("qty"+i);
+inp.addEventListener("keydown",function(e){
+if(e.key==="Enter"){
+e.preventDefault();
+if(i<barang.length-1){
+document.getElementById("qty"+(i+1)).focus();
+}else{
+document.getElementById("btnSimpan").focus();
+}
+}
+});
+});
+
+function simpan(){
+
+if(sedangMenyimpan)return;
+
+if(!confirm("Yakin ingin menyimpan data?")) return;
+
+let data=[];
+
+barang.forEach((item,index)=>{
+let jumlah=parseInt(document.getElementById("qty"+index).value)||0;
+if(jumlah>0){
+data.push({
+nama:item.nama,
+satuan:item.satuan,
+jumlah:jumlah
+});
+}
+});
+
+if(data.length===0){
+alert("Belum ada barang yang diinput.");
+return;
+}
+
+sedangMenyimpan=true;
+
+const btn=document.getElementById("btnSimpan");
+btn.disabled=true;
+btn.innerText="Menyimpan...";
+
+fetch(URL_APPS_SCRIPT,{
+method:"POST",
+headers:{
+"Content-Type":"text/plain;charset=utf-8"
+},
+body:JSON.stringify(data)
+})
+.then(r=>r.text())
+.then(()=>{
+barang.forEach((item,index)=>{
+document.getElementById("qty"+index).value=0;
+});
+const waktu=new Date().toLocaleString("id-ID");
+document.getElementById("lastSave").innerHTML="Terakhir disimpan : "+waktu;
+document.getElementById("status").innerHTML="✔ Data berhasil disimpan.";
+})
+.catch(()=>{
+alert("Gagal menyimpan data.");
+})
+.finally(()=>{
+sedangMenyimpan=false;
+btn.disabled=false;
+btn.innerText="Simpan ke Sheets";
+});
+}
+</script>
+</body>
+</html>
