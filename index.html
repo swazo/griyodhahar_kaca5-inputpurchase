@@ -242,7 +242,11 @@ html+=`
 <input type="number" id="qty${index}" min="0" value="0">
 </td>
 <td>
-<input type="number" id="harga${index}" min="0" value="0">
+<input
+type="text"
+id="harga${index}"
+value="Rp0"
+oninput="formatRupiah(this)">
 </td>
 </tr>`;
 });
@@ -293,7 +297,9 @@ let data=[];
 barang.forEach((item,index)=>{
 
 let jumlah = parseInt(document.getElementById("qty"+index).value) || 0;
-let harga = parseInt(document.getElementById("harga"+index).value) || 0;
+let harga = parseInt(
+document.getElementById("harga"+index).value.replace(/[^0-9]/g,"")
+) || 0;
 
 if(jumlah > 0){
 
@@ -346,6 +352,19 @@ sedangMenyimpan=false;
 btn.disabled=false;
 btn.innerText="Simpan ke Sheets";
 });
+}
+
+function formatRupiah(input){
+
+let angka = input.value.replace(/[^0-9]/g,"");
+
+if(angka===""){
+input.value="Rp0";
+return;
+}
+
+input.value="Rp"+parseInt(angka).toLocaleString("id-ID");
+
 }
 
   
