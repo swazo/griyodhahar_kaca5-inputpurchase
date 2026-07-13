@@ -16,6 +16,21 @@ input[type=number]{width:80px;padding:6px;text-align:center}
 button{background:#4CAF50;color:#fff;border:none;padding:12px 25px;border-radius:6px;cursor:pointer;font-size:16px;margin-top:20px}
 button:disabled{background:#999;cursor:not-allowed}
 .status{margin-top:15px;font-weight:bold;color:green}
+.search-box{
+width:100%;
+padding:12px 15px;
+margin:15px 0;
+font-size:16px;
+border:1px solid #ccc;
+border-radius:8px;
+box-sizing:border-box;
+}
+
+.search-box:focus{
+outline:none;
+border-color:#4CAF50;
+box-shadow:0 0 5px rgba(76,175,80,.4);
+}
 </style>
 </head>
 <body>
@@ -28,6 +43,13 @@ button:disabled{background:#999;cursor:not-allowed}
 <div id="lastSave">Terakhir disimpan : -</div>
 </div>
 
+<input
+type="text"
+id="search"
+class="search-box"
+placeholder="🔍 Cari nama barang..."
+autocomplete="off">
+  
 <table>
 <thead>
 <tr>
@@ -206,7 +228,7 @@ let html="";
 
 barang.forEach((item,index)=>{
 html+=`
-<tr>
+<tr class="barangRow" data-nama="${item.nama.trim().toLowerCase()}">
 <td>${index+1}</td>
 <td>${item.nama}</td>
 <td>${item.satuan}</td>
@@ -215,6 +237,24 @@ html+=`
 });
 
 document.getElementById("barangList").innerHTML=html;
+
+// ================= SEARCH =================
+document.getElementById("search").addEventListener("input",function(){
+
+const keyword=this.value.toLowerCase().trim();
+
+document.querySelectorAll(".barangRow").forEach(row=>{
+
+const nama=row.dataset.nama;
+
+row.style.display=nama.includes(keyword) ? "" : "none";
+
+});
+
+});
+
+document.getElementById("search").focus();
+// ==========================================
 
 // Enter pindah ke input berikutnya
 barang.forEach((_,i)=>{
@@ -230,62 +270,6 @@ document.getElementById("btnSimpan").focus();
 }
 });
 });
-
-function simpan(){
-
-if(sedangMenyimpan)return;
-
-if(!confirm("Yakin ingin menyimpan data?")) return;
-
-let data=[];
-
-barang.forEach((item,index)=>{
-let jumlah=parseInt(document.getElementById("qty"+index).value)||0;
-if(jumlah>0){
-data.push({
-nama:item.nama,
-satuan:item.satuan,
-jumlah:jumlah
-});
-}
-});
-
-if(data.length===0){
-alert("Belum ada barang yang diinput.");
-return;
-}
-
-sedangMenyimpan=true;
-
-const btn=document.getElementById("btnSimpan");
-btn.disabled=true;
-btn.innerText="Menyimpan...";
-
-fetch(URL_APPS_SCRIPT,{
-method:"POST",
-headers:{
-"Content-Type":"text/plain;charset=utf-8"
-},
-body:JSON.stringify(data)
-})
-.then(r=>r.text())
-.then(()=>{
-barang.forEach((item,index)=>{
-document.getElementById("qty"+index).value=0;
-});
-const waktu=new Date().toLocaleString("id-ID");
-document.getElementById("lastSave").innerHTML="Terakhir disimpan : "+waktu;
-document.getElementById("status").innerHTML="✔ Data berhasil disimpan.";
-})
-.catch(()=>{
-alert("Gagal menyimpan data.");
-})
-.finally(()=>{
-sedangMenyimpan=false;
-btn.disabled=false;
-btn.innerText="Simpan ke Sheets";
-});
-}
 </script>
 </body>
 </html>
