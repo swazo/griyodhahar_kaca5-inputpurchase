@@ -291,14 +291,21 @@ if(!confirm("Yakin ingin menyimpan data?")) return;
 let data=[];
 
 barang.forEach((item,index)=>{
-let jumlah=parseInt(document.getElementById("qty"+index).value)||0;
-if(jumlah>0){
+
+let jumlah = parseInt(document.getElementById("qty"+index).value) || 0;
+let harga = parseInt(document.getElementById("harga"+index).value) || 0;
+
+if(jumlah > 0){
+
 data.push({
-nama:item.nama,
-satuan:item.satuan,
-jumlah:jumlah
+nama: item.nama,
+satuan: item.satuan,
+jumlah: jumlah,
+harga: harga
 });
+
 }
+
 });
 
 if(data.length===0){
@@ -321,9 +328,12 @@ body:JSON.stringify(data)
 })
 .then(r=>r.text())
 .then(()=>{
+  
 barang.forEach((item,index)=>{
 document.getElementById("qty"+index).value=0;
+document.getElementById("harga"+index).value=0;
 });
+  
 const waktu=new Date().toLocaleString("id-ID");
 document.getElementById("lastSave").innerHTML="Terakhir disimpan : "+waktu;
 document.getElementById("status").innerHTML="✔ Data berhasil disimpan.";
