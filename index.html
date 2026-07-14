@@ -44,8 +44,32 @@ box-shadow:0 0 5px rgba(76,175,80,.4);
 <h2>INPUT STOCK HARIAN</h2>
 
 <div class="info">
-<div>Tanggal : <span id="tanggal"></span></div>
-<div id="lastSave">Terakhir disimpan : -</div>
+
+    <div>
+        Tanggal : <span id="tanggal"></span>
+    </div>
+
+    <div>
+
+        Divisi :
+        <select id="divisi" onchange="gantiDivisi()">
+
+            <option value="kitchen">
+                🍳 Kitchen
+            </option>
+
+            <option value="bartender">
+                🥤 Bartender
+            </option>
+
+        </select>
+
+    </div>
+
+    <div id="lastSave">
+        Terakhir disimpan : -
+    </div>
+
 </div>
 
 <input
@@ -78,9 +102,9 @@ autocomplete="off">
 
 <script>
 
-const URL_APPS_SCRIPT="https://script.google.com/macros/s/AKfycbxJhHfIOCBhllRpTnFJ61B0argRavbBBp0lkic8p57D60WCp_MKn8k5gKRDaAXkgLyC/exec";
+const URL_APPS_SCRIPT="https://script.google.com/macros/s/AKfycbwOg5ZUIPMmiRT2OaOMa0A7wUygHlFW1XpHgLRFb2POu5JtzUIofHPfAmdhZbf79F9QfA/exec";
 
-const barang=[
+const kitchenBarang=[
 {nama:"AYAM 0.9KG", satuan:"ekor"},
 {nama:"AYAM 1.1KG", satuan:"ekor"},
 {nama:"BEBEK 1.4KG", satuan:"ekor"},
@@ -169,7 +193,10 @@ const barang=[
 {nama:" MINYAK WIJEN ", satuan:" BOTOL "},
 {nama:" PARSLEY ", satuan:" BOTOL "},
 {nama:" KECAP ASIN ", satuan:" BOTOL "},
-{nama:" BERAS ", satuan:" KARUNG "},
+{nama:" BERAS ", satuan:" KARUNG "}
+];
+
+const bartenderBarang=[
 {nama:"ALPUKAT FROZ", satuan:"pack"},
 {nama:"MANGGA GOLEK/GADUNG", satuan:"kg"},
 {nama:"JERUK PERAS", satuan:"PCS"},
@@ -217,36 +244,57 @@ const barang=[
 {nama:"CETIK 7x10", satuan:"pack"},
 {nama:"SABUN CUCI PIRING", satuan:"jerigen"},
 {nama:"PARKIR", satuan:"unknown"}
-  
 ];
+
+let barang = kitchenBarang;
 
 let sedangMenyimpan=false;
 
 document.getElementById("tanggal").textContent=
 new Date().toLocaleDateString("id-ID",{day:"2-digit",month:"long",year:"numeric"});
 
-let html="";
+function renderBarang(){
 
-barang.forEach((item,index)=>{
-html+=`
-<tr class="barangRow" data-nama="${item.nama.trim().toLowerCase()}">
-<td>${index+1}</td>
-<td>${item.nama}</td>
-<td>${item.satuan}</td>
-<td>
-<input type="number" id="qty${index}" min="0" value="0">
-</td>
-<td>
-<input
-type="text"
-id="harga${index}"
-value="Rp0"
-oninput="formatRupiah(this)">
-</td>
-</tr>`;
-});
+    let html="";
 
-document.getElementById("barangList").innerHTML=html;
+    barang.forEach((item,index)=>{
+
+        html+=`
+        <tr class="barangRow"
+            data-nama="${item.nama.toLowerCase()}">
+
+            <td>${index+1}</td>
+
+            <td>${item.nama}</td>
+
+            <td>${item.satuan}</td>
+
+            <td>
+                <input
+                type="number"
+                id="qty${index}"
+                value="0"
+                min="0">
+            </td>
+
+            <td>
+                <input
+                type="text"
+                id="harga${index}"
+                value="Rp0"
+                oninput="formatRupiah(this)">
+            </td>
+
+        </tr>
+        `;
+
+    });
+
+    document.getElementById("barangList").innerHTML=html;
+
+}
+
+renderBarang();
 
 // ================= SEARCH =================
 document.getElementById("search").addEventListener("input",function(){
@@ -299,10 +347,17 @@ document.getElementById("harga"+index).value.replace(/[^0-9]/g,"")
 if(jumlah > 0){
 
 data.push({
-nama: item.nama,
-satuan: item.satuan,
-jumlah: jumlah,
-harga: harga
+
+    divisi: document.getElementById("divisi").value,
+
+    nama:item.nama,
+
+    satuan:item.satuan,
+
+    jumlah:jumlah,
+
+    harga:harga
+
 });
 
 }
@@ -310,9 +365,13 @@ harga: harga
 });
 
 if(data.length===0){
-alert("Belum ada barang yang diinput.");
-return;
+    alert("Belum ada barang yang diinput.");
+    return;
 }
+
+// TAMBAHKAN DUA BARIS INI
+console.log("DIVISI :", document.getElementById("divisi").value);
+console.log("DATA :", data);
 
 sedangMenyimpan=true;
 
@@ -371,6 +430,26 @@ input.value="Rp"+parseInt(angka).toLocaleString("id-ID");
 
 }
 
+
+
+function gantiDivisi(){
+
+    const divisi =
+    document.getElementById("divisi").value;
+
+    if(divisi=="kitchen"){
+
+        barang = kitchenBarang;
+
+    }else{
+
+        barang = bartenderBarang;
+
+    }
+
+    renderBarang();
+
+}
   
 </script>
 </body>
